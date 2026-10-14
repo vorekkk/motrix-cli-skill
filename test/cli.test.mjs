@@ -113,7 +113,16 @@ test("doctor --json reports structured state without leaking a token", (t) => {
   assert.ok(!result.stdout.includes("localToken"));
 });
 
-test("doctor resolves the live local bridge when one is running", (t) => {
+test("doctor resolves the live local bridge when the CLI is installed", (t) => {
+  const probe = spawnSync(
+    process.platform === "win32" ? "where" : "which",
+    ["motrix"],
+    { encoding: "utf8" },
+  );
+  if (probe.status !== 0) {
+    t.skip("motrix CLI is not installed on this runner");
+    return;
+  }
   const result = runCli(t, ["doctor", "--json"], { real: true });
   const report = JSON.parse(result.stdout);
   assert.equal(report.cli.present, true);
@@ -121,6 +130,10 @@ test("doctor resolves the live local bridge when one is running", (t) => {
   if (report.bridge.reachable) {
     assert.equal(report.bridge.engine.state, "ready");
     assert.ok(report.bridge.engine.featureReport.version.length > 0);
+  } else if (process.env.MOTRIX_LIVE === "1") {
+    assert.fail(
+      `MOTRIX_LIVE=1 requires a reachable bridge, but doctor reported: ${report.bridge.error.message}`,
+    );
   } else {
     t.diagnostic(`no live bridge: ${report.bridge.error.message}`);
   }
