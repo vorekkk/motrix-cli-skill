@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (node ${{ matrix.node }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      # The package has no runtime dependencies, so nothing needs installing.
+      - name: Unit tests
+        run: npm test
+      - name: Verify what npm would publish
+        run: npm run pack:check
+      - name: Check the skills are loadable as-is
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            for (const dir of ["skills/motrix-cli", "skills/motrix-cli-en"]) {
+              const raw = fs.readFileSync(`${dir}/SKILL.md`, "utf8");
+              if (!raw.startsWith("---\n")) throw new Error(`${dir}: missing frontmatter`);
+              const name = /^name: (.+)$/m.exec(raw)[1].trim();
+              if (name !== dir.split("/").pop()) throw new Error(`${dir}: name mismatch`);
+              console.log(`ok ${dir} -> ${name}`);
+            }
+          '
+
+  live:
+    name: live checks (Motrix bridge)
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Install the official CLI
+        run: npm i -g @motrix/cli
+      # Turns on the bridge-dependent assertions in the test suite; without a
+      # reachable bridge those tests self-diagnose and skip.
+      - name: Live bridge assertions
+        env:
+          MOTRIX_LIVE: '1'
+        run: npm test

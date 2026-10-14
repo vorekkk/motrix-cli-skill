@@ -1,0 +1,72 @@
+name: Release
+
+# Publishing uses npm Trusted Publishing (OIDC), so no long-lived token is
+# stored in this repository. Configure the trusted publisher for this repo,
+# workflow file and the `npm` environment on npmjs.com before pushing the first
+# tag — see docs/发布.md. Until that is configured, publish manually.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and verify only, without publishing to npm
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: npm test
+      - run: npm run pack:check
+      - name: Verify the tag matches package.json
+        if: github.ref_type == 'tag'
+        run: |
+          node -e '
+            const pkg = require("./package.json");
+            const tag = process.env.GITHUB_REF_NAME;
+            if (tag !== `v${pkg.version}`) {
+              console.error(`tag ${tag} does not match package version v${pkg.version}`);
+              process.exit(1);
+            }
+            console.log(`tag ${tag} matches ${pkg.name}@${pkg.version}`);
+          '
+      - name: Pack the tarball
+        run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: '*.tgz'
+          if-no-files-found: error
+
+  publish:
+    needs: verify
+    if: github.ref_type == 'tag' && inputs.dry_run != true
+    runs-on: ubuntu-24.04
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/motrix-cli-skill
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Publish with provenance
+        run: npm publish --provenance --access public

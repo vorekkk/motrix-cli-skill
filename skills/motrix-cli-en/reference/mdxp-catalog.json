@@ -1,0 +1,945 @@
+{
+  "_snapshot": {
+    "authoritative": false,
+    "authoritativeCommand": "motrix describe --json",
+    "generatedBy": "scripts/sync-catalog.mjs",
+    "cliVersion": "0.5.0",
+    "methodCount": 8,
+    "note": "Static catalog of agent-callable MDXP methods, captured from the installed @motrix/cli. It reflects the protocol version the CLI was built against. Always re-run `motrix describe --json` when exact, current shapes matter."
+  },
+  "methods": [
+    {
+      "name": "download/add",
+      "description": "Add a download by URL(s), magnet, or torrent; returns the created task.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "url"
+              },
+              "saveDir": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uris": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "filename": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "connections": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "proxy": {
+                "type": "string"
+              },
+              "idempotencyKey": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "kind",
+              "saveDir",
+              "uris"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "magnet"
+              },
+              "saveDir": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uri": {
+                "type": "string",
+                "pattern": "^magnet:\\?.*"
+              },
+              "selectedFiles": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "idempotencyKey": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "kind",
+              "saveDir",
+              "uri"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "torrent"
+              },
+              "saveDir": {
+                "type": "string",
+                "minLength": 1
+              },
+              "base64": {
+                "type": "string",
+                "minLength": 1
+              },
+              "selectedFiles": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "idempotencyKey": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "kind",
+              "saveDir",
+              "base64"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "http",
+              "ftp",
+              "bt",
+              "magnet",
+              "metalink"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "fetching_metadata",
+              "downloading",
+              "paused",
+              "seeding",
+              "finalizing",
+              "completed",
+              "error"
+            ]
+          },
+          "progress": {
+            "type": "number"
+          },
+          "bytesDone": {
+            "type": "number"
+          },
+          "bytesTotal": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "speedBps": {
+            "type": "number"
+          },
+          "etaSec": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "saveDir": {
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "finishedAt": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finalPath": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "infoHash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bt": {
+            "type": "object",
+            "properties": {
+              "peers": {
+                "type": "number"
+              },
+              "seeds": {
+                "type": "number"
+              },
+              "ratio": {
+                "type": "number"
+              },
+              "trackers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "peers",
+              "seeds",
+              "ratio",
+              "trackers"
+            ],
+            "additionalProperties": false
+          },
+          "errorCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "status",
+          "progress",
+          "bytesDone",
+          "bytesTotal",
+          "speedBps",
+          "etaSec",
+          "saveDir",
+          "error",
+          "createdAt",
+          "finishedAt",
+          "finalPath"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task/list",
+      "description": "List tasks, optionally filtered by status and paginated.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "fetching_metadata",
+              "downloading",
+              "paused",
+              "seeding",
+              "finalizing",
+              "completed",
+              "error"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "http",
+                    "ftp",
+                    "bt",
+                    "magnet",
+                    "metalink"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "queued",
+                    "fetching_metadata",
+                    "downloading",
+                    "paused",
+                    "seeding",
+                    "finalizing",
+                    "completed",
+                    "error"
+                  ]
+                },
+                "progress": {
+                  "type": "number"
+                },
+                "bytesDone": {
+                  "type": "number"
+                },
+                "bytesTotal": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "speedBps": {
+                  "type": "number"
+                },
+                "etaSec": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "saveDir": {
+                  "type": "string"
+                },
+                "error": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "createdAt": {
+                  "type": "number"
+                },
+                "finishedAt": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "finalPath": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "infoHash": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "bt": {
+                  "type": "object",
+                  "properties": {
+                    "peers": {
+                      "type": "number"
+                    },
+                    "seeds": {
+                      "type": "number"
+                    },
+                    "ratio": {
+                      "type": "number"
+                    },
+                    "trackers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "peers",
+                    "seeds",
+                    "ratio",
+                    "trackers"
+                  ],
+                  "additionalProperties": false
+                },
+                "errorCode": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "name",
+                "status",
+                "progress",
+                "bytesDone",
+                "bytesTotal",
+                "speedBps",
+                "etaSec",
+                "saveDir",
+                "error",
+                "createdAt",
+                "finishedAt",
+                "finalPath"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "tasks",
+          "total"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task/get",
+      "description": "Get a single task by id (null if not found).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "task": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "http",
+                      "ftp",
+                      "bt",
+                      "magnet",
+                      "metalink"
+                    ]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "queued",
+                      "fetching_metadata",
+                      "downloading",
+                      "paused",
+                      "seeding",
+                      "finalizing",
+                      "completed",
+                      "error"
+                    ]
+                  },
+                  "progress": {
+                    "type": "number"
+                  },
+                  "bytesDone": {
+                    "type": "number"
+                  },
+                  "bytesTotal": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "speedBps": {
+                    "type": "number"
+                  },
+                  "etaSec": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "saveDir": {
+                    "type": "string"
+                  },
+                  "error": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "number"
+                  },
+                  "finishedAt": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "finalPath": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "infoHash": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bt": {
+                    "type": "object",
+                    "properties": {
+                      "peers": {
+                        "type": "number"
+                      },
+                      "seeds": {
+                        "type": "number"
+                      },
+                      "ratio": {
+                        "type": "number"
+                      },
+                      "trackers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "peers",
+                      "seeds",
+                      "ratio",
+                      "trackers"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "errorCode": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "name",
+                  "status",
+                  "progress",
+                  "bytesDone",
+                  "bytesTotal",
+                  "speedBps",
+                  "etaSec",
+                  "saveDir",
+                  "error",
+                  "createdAt",
+                  "finishedAt",
+                  "finalPath"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "task"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task/pause",
+      "description": "Pause a task by id.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task/resume",
+      "description": "Resume a paused task by id.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "task/remove",
+      "description": "Remove a task by id, optionally deleting its files.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deleteFiles": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "stats/get",
+      "description": "Get aggregate global stats (speeds + task counts).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "totalDownloadSpeed": {
+            "type": "number"
+          },
+          "totalUploadSpeed": {
+            "type": "number"
+          },
+          "activeTasks": {
+            "type": "number"
+          },
+          "waitingTasks": {
+            "type": "number"
+          },
+          "stoppedTasks": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalDownloadSpeed",
+          "totalUploadSpeed",
+          "activeTasks",
+          "waitingTasks",
+          "stoppedTasks"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "engine/status",
+      "description": "Get the download engine lifecycle state + feature report.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "stopped",
+              "starting",
+              "ready",
+              "restarting",
+              "failed"
+            ]
+          },
+          "featureReport": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string"
+                  },
+                  "features": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "hasBtSeedUnverified": {
+                    "type": "boolean"
+                  },
+                  "hasBtSaveMetadata": {
+                    "type": "boolean"
+                  },
+                  "hasMoveStorage": {
+                    "type": "boolean"
+                  },
+                  "hasSqlitePersistence": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "version",
+                  "features",
+                  "hasBtSeedUnverified",
+                  "hasBtSaveMetadata",
+                  "hasMoveStorage",
+                  "hasSqlitePersistence"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "featureReport"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

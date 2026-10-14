@@ -1,0 +1,50 @@
+{
+  "name": "motrix-cli-skill",
+  "version": "0.1.0",
+  "description": "Agent skill bundle for the Motrix command-line client (@motrix/cli) — installs the motrix-cli / motrix-cli-en skills for Codex and Claude, plus a native MDXP fallback for methods the CLI does not expose.",
+  "license": "MIT",
+  "author": "vorekkk",
+  "homepage": "https://github.com/vorekkk/motrix-cli-skill#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vorekkk/motrix-cli-skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vorekkk/motrix-cli-skill/issues"
+  },
+  "keywords": [
+    "motrix",
+    "cli",
+    "download",
+    "download-manager",
+    "mdxp",
+    "agent",
+    "skill",
+    "codex",
+    "claude"
+  ],
+  "type": "module",
+  "bin": {
+    "motrix-cli-skill": "bin/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "skills",
+    "README.md",
+    "README.en.md"
+  ],
+  "scripts": {
+    "postinstall": "node ./bin/postinstall.js",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "sync:catalog": "node ./scripts/sync-catalog.mjs",
+    "pack:check": "node ./scripts/check-pack.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
