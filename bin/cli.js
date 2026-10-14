@@ -233,8 +233,25 @@ async function commandDoctor(args) {
   const skills = inspectInstalled({ target: "all", skill: "all" });
   const local = discoverLocalEndpoint();
   const pairings = listPairedEndpoints();
+  // A target we did not install into is informational, not a failure: users may
+  // deliberately target a single agent (or that agent's directory may be owned
+  // by another user). What must hold is that at least one skill is installed and
+  // every installed copy is intact.
+  const installed = skills.filter((entry) => entry.installed);
+  const healthy = installed.filter((entry) => entry.healthy);
+  const skillsSummary = {
+    installed: installed.length,
+    healthy: healthy.length,
+    unhealthy: installed.length - healthy.length,
+    notInstalled: skills.length - installed.length,
+  };
   const report = {
-    ok: nodeOk && cli.present && bridge.reachable && skills.every((s) => s.healthy),
+    ok:
+      nodeOk &&
+      cli.present &&
+      bridge.reachable &&
+      installed.length > 0 &&
+      healthy.length === installed.length,
     package: {
       name: "motrix-cli-skill",
       version: packageVersion(),
@@ -257,6 +274,7 @@ async function commandDoctor(args) {
         hasToken: Boolean(entry.token),
       })),
     },
+    skillsSummary,
     skills,
   };
 
@@ -288,11 +306,9 @@ async function commandDoctor(args) {
     }
   }
   process.stdout.write(
-    `${mark(pairings.exists)} paired endpoints file ${
-      pairings.exists
-        ? `(${pairings.entries.length} paired)`
-        : `not present (${pairings.file})`
-    }\n`,
+    pairings.exists
+      ? `${mark(true)} paired endpoints file (${pairings.entries.length} paired)\n`
+      : `- no paired endpoints file (${pairings.file}); the local desktop needs no pairing\n`,
   );
   for (const entry of skills) {
     if (entry.installed) {
@@ -305,8 +321,15 @@ async function commandDoctor(args) {
         `${mark(entry.healthy)} skill ${entry.skill} [${entry.target}] v${entry.version}${problems}\n`,
       );
     } else {
-      process.stdout.write(`- skill ${entry.skill} [${entry.target}] not installed\n`);
+      process.stdout.write(
+        `- skill ${entry.skill} [${entry.target}] not installed (run \`motrix-cli-skill install --target ${entry.target}\` to add it)\n`,
+      );
     }
+  }
+  if (skillsSummary.installed === 0) {
+    process.stdout.write(
+      "\nNo skills are installed anywhere — run `motrix-cli-skill install`.\n",
+    );
   }
   process.stdout.write(
     report.ok

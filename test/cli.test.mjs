@@ -110,7 +110,37 @@ test("doctor --json reports structured state without leaking a token", (t) => {
   );
   assert.ok(report.skills.every((entry) => entry.target === "codex"));
   assert.ok(report.skills.every((entry) => entry.installed === false));
+  assert.deepEqual(report.skillsSummary, {
+    installed: 0,
+    healthy: 0,
+    unhealthy: 0,
+    notInstalled: 2,
+  });
   assert.ok(!result.stdout.includes("localToken"));
+});
+
+test("doctor (human output) tells you to install when nothing is installed", (t) => {
+  const result = runCli(t, ["doctor"]);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /No skills are installed anywhere/);
+  assert.match(result.stdout, /not installed \(run `motrix-cli-skill install --target codex` to add it\)/);
+});
+
+test("doctor is satisfied once a skill is installed, even if other agents are not", (t) => {
+  const install = runCli(t, ["install", "--skill", "motrix-cli"]);
+  assert.equal(install.status, 0);
+  const result = runCli(t, ["doctor", "--json"], { home: install.root });
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual(report.skillsSummary, {
+    installed: 1,
+    healthy: 1,
+    unhealthy: 0,
+    notInstalled: 1,
+  });
+  // The sandbox has no bridge, so doctor still reports a problem — but the
+  // skill is not what is wrong.
+  assert.equal(report.bridge.reachable, false);
+  assert.equal(report.skills.find((entry) => entry.installed).healthy, true);
 });
 
 test("doctor resolves the live local bridge when the CLI is installed", (t) => {
