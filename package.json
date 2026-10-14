@@ -39,7 +39,7 @@
     "README.en.md"
   ],
   "scripts": {
-    "postinstall": "node ./bin/postinstall.js",
+    "postinstall": "node -e \"const p=require('node:path'),fs=require('node:fs'),u=require('node:url');const base=p.dirname(process.env.npm_package_json||p.join(process.cwd(),'package.json'));const entry=p.join(base,'bin','postinstall.js');if(fs.existsSync(entry)){import(u.pathToFileURL(entry).href)}else{console.log('motrix-cli-skill: run motrix-cli-skill install to add the skills')}\"",
     "test": "node --test \"test/**/*.test.mjs\"",
     "sync:catalog": "node ./scripts/sync-catalog.mjs",
     "pack:check": "node ./scripts/check-pack.mjs"
