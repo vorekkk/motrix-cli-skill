@@ -8,6 +8,8 @@ import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { postinstallProblems } from "../src/lifecycle-guard.js";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const required = [
@@ -58,6 +60,8 @@ process.stdout.write(
   `package ${entry.name}@${entry.version}: ${files.length} files, ${entry.unpackedSize} bytes unpacked\n`,
 );
 for (const file of files) process.stdout.write(`  ${file}\n`);
+
+problems.push(...postinstallProblems(entry.scripts?.postinstall ?? ""));
 
 if (problems.length > 0) {
   process.stderr.write(`\n${problems.map((p) => `✗ ${p}`).join("\n")}\n`);

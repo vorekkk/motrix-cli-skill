@@ -36,12 +36,24 @@ CLI ships a 62-line skill; this one closes the gaps an agent actually hits:
 # Global install (auto-installs both skills into the agents it detects)
 npm i -g motrix-cli-skill
 
-# Or straight from the Git repository
-npm i -g github:vorekkk/motrix-cli-skill
-
 # If npm gated the install script (npm >= 11.19 allowScripts notice), install once explicitly
 motrix-cli-skill install
 ```
+
+Before the package is on npm, or when you want to install from source, use a tarball — it is the
+publish payload as a real copy, not a symlink:
+
+```bash
+git clone https://github.com/vorekkk/motrix-cli-skill.git
+cd motrix-cli-skill
+npm pack
+npm i -g ./motrix-cli-skill-0.1.0.tgz
+```
+
+> Avoid `npm i -g github:vorekkk/motrix-cli-skill` on npm 11.19: npm links a git dependency to
+> `~/.npm/_cacache/tmp/git-clone*` and then deletes that directory, leaving a dangling package and
+> no binary on PATH. That is npm's git-dependency behaviour and cannot be fixed from inside the
+> package; use the tarball recipe above.
 
 You also need the official CLI and a reachable Motrix:
 

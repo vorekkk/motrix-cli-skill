@@ -32,12 +32,22 @@ agent 实际会踩的坑：
 # 全局安装（会自动把两个 skill 写入检测到的 agent 目录）
 npm i -g motrix-cli-skill
 
-# 也可以直接从 Git 仓库安装
-npm i -g github:vorekkk/motrix-cli-skill
-
 # 若 npm 拦下了安装脚本（npm ≥ 11.19 的 allowScripts 提示），显式装一次即可
 motrix-cli-skill install
 ```
+
+在包发布到 npm 之前，或者想从仓库源码安装，用 tarball（等价于发布产物，且是真实拷贝而非软链接）：
+
+```bash
+git clone https://github.com/vorekkk/motrix-cli-skill.git
+cd motrix-cli-skill
+npm pack
+npm i -g ./motrix-cli-skill-0.1.0.tgz
+```
+
+> 暂不建议 `npm i -g github:vorekkk/motrix-cli-skill`：npm 11.19 会把 git 依赖链接到
+> `~/.npm/_cacache/tmp/git-clone*` 后删除该目录，装完是断链、命令也不在 PATH 上（这是 npm 的
+> git 依赖行为，包内无法修复）。请用上面的 tarball 方式。
 
 使用前还需要官方 CLI 与一个可达的 Motrix：
 
